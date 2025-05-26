@@ -129,7 +129,14 @@ archivos:
 
         zip_path = guardar_estructura(nombre_proyecto, archivos_input, archivo_output, resumen)
         st.success("Proyecto preparado y empaquetado correctamente.")
-        st.markdown(f"[⬇️ Descargar ZIP]({zip_path})")
+        with open(zip_path, "rb") as f:
+            st.download_button(
+        label="⬇️ Descargar ZIP",
+        data=f,
+        file_name=os.path.basename(zip_path),
+        mime="application/zip"
+    )
+
 
 if __name__ == "__main__":
     os.makedirs("proyectos_temporales", exist_ok=True)
