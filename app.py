@@ -6,6 +6,7 @@ from pathlib import Path
 from docx import Document
 import pdfplumber
 import google.generativeai as genai
+import tempfile
 
 # Definir modelo global (se configurará dinámicamente)
 model = None
@@ -18,8 +19,12 @@ def extraer_texto_pdf(path, max_paginas=5):
             texto += "\n\n"
     return texto.strip()
 
-def extraer_texto_docx(path):
-    doc = Document(path)
+def extraer_texto_docx_from_bytes(bytes_data):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+        tmp.write(bytes_data)
+        tmp_path = tmp.name
+    doc = Document(tmp_path)
+    os.remove(tmp_path)
     return "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
 
 def analizar_con_gemini(nombre_archivo, contenido):
@@ -54,7 +59,7 @@ def guardar_estructura(nombre_proyecto, archivos_input, archivo_output, metadata
         f.write(metadata)
 
     zip_path = Path("proyectos_exportados") / f"{nombre_proyecto}.zip"
-    shutil.make_archive(zip_path.with_suffix("").as_posix(), "zip", base_path)
+    shutil.make_archive(zip_path.with_suffix("" ).as_posix(), "zip", base_path)
 
     return zip_path
 
@@ -108,14 +113,16 @@ archivos:
 """
         for archivo in archivos_input:
             nombre = archivo.name
+            contenido = ""
             if nombre.endswith(".pdf"):
-                with open(f"/tmp/{nombre}", "wb") as f:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
                     f.write(archivo.read())
-                contenido = extraer_texto_pdf(f"/tmp/{nombre}")
+                    temp_pdf_path = f.name
+                contenido = extraer_texto_pdf(temp_pdf_path)
+                os.remove(temp_pdf_path)
             else:
-                with open(f"/tmp/{nombre}", "wb") as f:
-                    f.write(archivo.read())
-                contenido = extraer_texto_docx(f"/tmp/{nombre}")
+                contenido = extraer_texto_docx_from_bytes(archivo.read())
+
             resumen_gemini = analizar_con_gemini(nombre, contenido)
             resumen += f"  - {nombre}: {resumen_gemini}\n"
 
