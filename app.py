@@ -128,16 +128,12 @@ archivos:
                 contenido = extraer_texto_docx_from_bytes(contenido_archivo)
 
             resumen_gemini = analizar_con_gemini(nombre, contenido)
-            resumen += f"  - {nombre}: {resumen_gemini}
-"
+            resumen += f"  - {nombre}: {resumen_gemini}\n"
 
         # Analizar el documento final y reiniciar su contenido para escritura
         contenido_output = archivo_output.read()
         resumen_final = analizar_con_gemini("prebep_final.docx", extraer_texto_docx_from_bytes(contenido_output))
-        resumen += f"
-Resumen del documento final (prebep_final.docx):
-{resumen_final}
-"
+        resumen += f"\nResumen del documento final (prebep_final.docx):\n{resumen_final}\n"
 
         from io import BytesIO
         archivo_output = BytesIO(contenido_output)
