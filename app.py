@@ -119,11 +119,14 @@ archivos:
             archivos_en_memoria.append((nombre, contenido_archivo))
 
             if nombre.endswith(".pdf"):
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-                    f.write(contenido_archivo)
-                    temp_pdf_path = f.name
-                contenido = extraer_texto_pdf(temp_pdf_path)
-                os.remove(temp_pdf_path)
+                from io import BytesIO
+                with pdfplumber.open(BytesIO(contenido_archivo)) as pdf:
+                    contenido = ""
+                    for page in pdf.pages[:5]:
+                        contenido += page.extract_text() or ""
+                        contenido += "
+
+"
             else:
                 contenido = extraer_texto_docx_from_bytes(contenido_archivo)
 
