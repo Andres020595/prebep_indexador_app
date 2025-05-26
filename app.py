@@ -30,13 +30,13 @@ def extraer_texto_docx_from_bytes(bytes_data):
 
 def analizar_con_gemini(nombre_archivo, contenido):
     prompt = f"""
-Eres un asistente especializado en procesos BIM.
-Estás ayudando a construir una base de datos de proyectos históricos.
-Analiza el siguiente archivo y resume sus puntos más importantes en máximo 5 líneas:
+Eres un asistente técnico especializado en BIM. Estás colaborando en la creación de un repositorio de proyectos históricos para el análisis y redacción automatizada de documentos Pre-BEP.
+
+Analiza el contenido completo del siguiente archivo. Extrae y describe con claridad los puntos clave, conceptos técnicos, roles, entregables, condiciones o estructura que pueda ser relevante. No te limites a un resumen breve, enfócate en información útil que pueda alimentar una base vectorial consultable por IA.
 
 Archivo: {nombre_archivo}
 Contenido:
-{contenido[:2000]}
+{contenido[:8000]}
 """
     respuesta = model.generate_content(prompt)
     return respuesta.text.strip()
