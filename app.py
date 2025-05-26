@@ -7,6 +7,7 @@ from docx import Document
 import pdfplumber
 import google.generativeai as genai
 import tempfile
+from io import BytesIO
 
 # Definir modelo global (se configurará dinámicamente)
 model = None
@@ -20,16 +21,12 @@ def extraer_texto_pdf(path, max_paginas=5):
     return texto.strip()
 
 def extraer_texto_docx_from_bytes(bytes_data):
-    from io import BytesIO
     try:
         file_stream = BytesIO(bytes_data)
         doc = Document(file_stream)
-        return "
-".join([p.text for p in doc.paragraphs if p.text.strip()])
+        return "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
     except Exception:
-        return "[Error: no se pudo leer el archivo DOCX correctamente]".join([p.text for p in doc.paragraphs if p.text.strip()])
-    except Exception:
-        return "[Error: no se pudo leer el archivo DOCX correctamente]""[Error: no se pudo leer el archivo DOCX correctamente]""\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+        return "[Error: no se pudo leer el archivo DOCX correctamente]"
 
 def analizar_con_gemini(nombre_archivo, contenido):
     prompt = f"""
