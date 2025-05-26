@@ -124,7 +124,7 @@ archivos:
                     contenido = ""
                     for page in pdf.pages[:5]:
                         contenido += page.extract_text() or ""
-                        contenido += "
+                        contenido += "\n\n"
 
 "
             else:
