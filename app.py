@@ -20,12 +20,14 @@ def extraer_texto_pdf(path, max_paginas=5):
     return texto.strip()
 
 def extraer_texto_docx_from_bytes(bytes_data):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-        tmp.write(bytes_data)
-        tmp_path = tmp.name
-    doc = Document(tmp_path)
-    os.remove(tmp_path)
-    return "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+    from io import BytesIO
+    try:
+        file_stream = BytesIO(bytes_data)
+        doc = Document(file_stream)
+        return "
+".join([p.text for p in doc.paragraphs if p.text.strip()])
+    except Exception:
+        return "[Error: no se pudo leer el archivo DOCX correctamente]""\n".join([p.text for p in doc.paragraphs if p.text.strip()])
 
 def analizar_con_gemini(nombre_archivo, contenido):
     prompt = f"""
