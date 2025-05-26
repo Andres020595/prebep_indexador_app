@@ -41,15 +41,15 @@ Contenido:
     respuesta = model.generate_content(prompt)
     return respuesta.text.strip()
 
-def guardar_estructura(nombre_proyecto, archivos_input, archivo_output, metadata):
+def guardar_estructura(nombre_proyecto, archivos_en_memoria, archivo_output, metadata):
     base_path = Path(f"proyectos_temporales/{nombre_proyecto}")
     inputs_path = base_path / "inputs"
     inputs_path.mkdir(parents=True, exist_ok=True)
 
-    for archivo in archivos_input:
-        archivo_path = inputs_path / archivo.name
+    for nombre_archivo, contenido in archivos_en_memoria:
+        archivo_path = inputs_path / nombre_archivo
         with open(archivo_path, "wb") as f:
-            f.write(archivo.read())
+            f.write(contenido)
 
     output_path = base_path / "prebep_final.docx"
     with open(output_path, "wb") as f:
@@ -112,31 +112,44 @@ usos_bim: {usos_bim}
 n_paginas_deseadas: {paginas}
 archivos:
 """
+        archivos_en_memoria = []
         for archivo in archivos_input:
             nombre = archivo.name
-            contenido = ""
+            contenido_archivo = archivo.read()
+            archivos_en_memoria.append((nombre, contenido_archivo))
+
             if nombre.endswith(".pdf"):
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-                    f.write(archivo.read())
+                    f.write(contenido_archivo)
                     temp_pdf_path = f.name
                 contenido = extraer_texto_pdf(temp_pdf_path)
                 os.remove(temp_pdf_path)
             else:
-                contenido = extraer_texto_docx_from_bytes(archivo.read())
+                contenido = extraer_texto_docx_from_bytes(contenido_archivo)
 
             resumen_gemini = analizar_con_gemini(nombre, contenido)
             resumen += f"  - {nombre}: {resumen_gemini}\n"
 
-        zip_path = guardar_estructura(nombre_proyecto, archivos_input, archivo_output, resumen)
+                contenido_output = archivo_output.read()
+        resumen_final = analizar_con_gemini("prebep_final.docx", extraer_texto_docx_from_bytes(contenido_output))
+        resumen += f"
+Resumen del documento final (prebep_final.docx):
+{resumen_final}
+"
+
+        # Reescribimos archivo_output para que no se pierda
+        from io import BytesIO
+        archivo_output = BytesIO(contenido_output)
+
+        zip_path = guardar_estructura(nombre_proyecto, archivos_en_memoria, archivo_output, resumen)
         st.success("Proyecto preparado y empaquetado correctamente.")
         with open(zip_path, "rb") as f:
             st.download_button(
-        label="⬇️ Descargar ZIP",
-        data=f,
-        file_name=os.path.basename(zip_path),
-        mime="application/zip"
-    )
-
+                label="⬇️ Descargar ZIP",
+                data=f,
+                file_name=os.path.basename(zip_path),
+                mime="application/zip"
+            )
 
 if __name__ == "__main__":
     os.makedirs("proyectos_temporales", exist_ok=True)
