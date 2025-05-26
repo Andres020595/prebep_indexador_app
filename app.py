@@ -27,7 +27,7 @@ def extraer_texto_docx_from_bytes(bytes_data):
         return "
 ".join([p.text for p in doc.paragraphs if p.text.strip()])
     except Exception:
-        return "[Error: no se pudo leer el archivo DOCX correctamente]""\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+        return "[Error: no se pudo leer el archivo DOCX correctamente]""[Error: no se pudo leer el archivo DOCX correctamente]""\n".join([p.text for p in doc.paragraphs if p.text.strip()])
 
 def analizar_con_gemini(nombre_archivo, contenido):
     prompt = f"""
