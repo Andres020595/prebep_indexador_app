@@ -126,7 +126,6 @@ archivos:
                         contenido += page.extract_text() or ""
                         contenido += "\n\n"
 
-"
             else:
                 contenido = extraer_texto_docx_from_bytes(contenido_archivo)
 
